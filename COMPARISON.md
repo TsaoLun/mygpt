@@ -4,18 +4,19 @@
 
 ### 1. 核心概念映射
 
-| Burn | Candle | 说明 |
-|------|--------|------|
-| `Backend` trait | `Device` | 设备抽象 |
-| `Tensor<B, D, K>` | `Tensor` | 张量类型 |
-| `Module` trait | 手动实现 | 模块抽象 |
-| `Config` trait | `serde` | 配置序列化 |
-| `Autodiff<B>` | `VarMap` + `backward_step` | 自动微分 |
-| `CompactRecorder` | `safetensors` | 模型保存 |
+| Burn              | Candle                     | 说明       |
+| ----------------- | -------------------------- | ---------- |
+| `Backend` trait   | `Device`                   | 设备抽象   |
+| `Tensor<B, D, K>` | `Tensor`                   | 张量类型   |
+| `Module` trait    | 手动实现                   | 模块抽象   |
+| `Config` trait    | `serde`                    | 配置序列化 |
+| `Autodiff<B>`     | `VarMap` + `backward_step` | 自动微分   |
+| `CompactRecorder` | `safetensors`              | 模型保存   |
 
 ### 2. 层实现对比
 
 #### Linear Layer
+
 ```rust
 // Burn
 let linear = LinearConfig::new(in_features, out_features).init(device);
@@ -27,6 +28,7 @@ let output = linear.forward(&input)?;
 ```
 
 #### Embedding Layer
+
 ```rust
 // Burn
 let embedding = EmbeddingConfig::new(vocab_size, embed_dim).init(device);
@@ -38,6 +40,7 @@ let output = embedding.forward(&input)?;
 ```
 
 #### LayerNorm
+
 ```rust
 // Burn
 let ln = LayerNormConfig::new(normalized_shape).init(device);
@@ -49,6 +52,7 @@ let output = ln.forward(&input)?;
 ```
 
 #### Dropout
+
 ```rust
 // Burn
 let dropout = DropoutConfig::new(prob).init();
@@ -65,6 +69,7 @@ fn dropout(x: &Tensor, prob: f64) -> Result<Tensor> {
 ### 3. 训练循环对比
 
 #### Burn 方式
+
 ```rust
 impl<B: AutodiffBackend> TrainStep<Batch<B>, Output<B>> for Model<B> {
     fn step(&self, batch: Batch<B>) -> TrainOutput<Output<B>> {
@@ -81,6 +86,7 @@ let model = learner.fit(train_loader, val_loader);
 ```
 
 #### Candle 方式
+
 ```rust
 let mut optimizer = AdamW::new(varmap.all_vars(), params)?;
 
@@ -97,6 +103,7 @@ varmap.save("model.safetensors")?;
 ### 4. 张量操作对比
 
 #### 形状操作
+
 ```rust
 // Burn
 let x = x.reshape([b * t, c]);
@@ -108,6 +115,7 @@ let x = x.repeat((batch_size, 1))?;
 ```
 
 #### 索引操作
+
 ```rust
 // Burn
 let x = x.slice([0..1, t-1..t]);
@@ -118,6 +126,7 @@ let x = x.narrow(1, t-1, 1)?;  // 切片
 ```
 
 #### 掩码操作
+
 ```rust
 // Burn
 let mask = Tensor::tril_mask([b, t, t], 0, device);
@@ -136,6 +145,7 @@ let x = x.broadcast_add(&mask)?;
 ### 5. 模型保存和加载
 
 #### Burn
+
 ```rust
 // 保存
 model.save_file(path, &CompactRecorder::new())?;
@@ -147,6 +157,7 @@ let model = config.init::<B>(device).load_record(record);
 ```
 
 #### Candle
+
 ```rust
 // 保存
 varmap.save("model.safetensors")?;
@@ -165,23 +176,25 @@ let model = Model::new(&config, vb)?;
 ### 6. 错误处理
 
 #### Burn
+
 - 使用 `expect()` 和 `unwrap()` 较多
 - 部分操作是 infallible 的
 
 #### Candle
+
 - 所有操作都返回 `Result`
 - 使用 `anyhow` 进行错误传播
 - 需要显式处理所有错误
 
 ### 7. 性能考虑
 
-| 方面 | Burn | Candle |
-|------|------|--------|
-| 编译速度 | 较慢 | 较快 |
-| 运行时性能 | 优秀 | 优秀 |
-| 内存使用 | 自动优化 | 需手动注意 |
-| GPU 支持 | Wgpu (跨平台) | CUDA/Metal |
-| 易用性 | 高 | 中 |
+| 方面       | Burn          | Candle     |
+| ---------- | ------------- | ---------- |
+| 编译速度   | 较慢          | 较快       |
+| 运行时性能 | 优秀          | 优秀       |
+| 内存使用   | 自动优化      | 需手动注意 |
+| GPU 支持   | Wgpu (跨平台) | CUDA/Metal |
+| 易用性     | 高            | 中         |
 
 ### 8. 主要挑战
 
@@ -207,12 +220,14 @@ Candle 相对于 Burn 的优势：
 ### 10. 使用建议
 
 **选择 Burn 如果**:
+
 - 需要快速原型开发
 - 喜欢高级抽象
 - 需要跨平台 GPU 支持
 - 刚开始学习深度学习
 
 **选择 Candle 如果**:
+
 - 需要更好的性能控制
 - 需要与 HuggingFace 生态集成
 - 喜欢底层控制
@@ -235,14 +250,15 @@ Candle 相对于 Burn 的优势：
 
 ### 12. 代码行数对比
 
-| 模块 | Burn | Candle | 差异 |
-|------|------|--------|------|
-| modeling | ~280行 | ~350行 | +25% |
-| training | ~80行 | ~140行 | +75% |
-| generating | ~40行 | ~70行 | +75% |
-| 总计 | ~500行 | ~700行 | +40% |
+| 模块       | Burn   | Candle | 差异 |
+| ---------- | ------ | ------ | ---- |
+| modeling   | ~280行 | ~350行 | +25% |
+| training   | ~80行  | ~140行 | +75% |
+| generating | ~40行  | ~70行  | +75% |
+| 总计       | ~500行 | ~700行 | +40% |
 
 Candle 版本代码量增加主要原因：
+
 - 需要手动实现 Dropout
 - 需要手动实现训练循环
 - 需要更多错误处理代码

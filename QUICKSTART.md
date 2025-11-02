@@ -3,6 +3,7 @@
 ## 🚀 快速开始
 
 ### 前置要求
+
 - Rust 1.70 或更高版本
 - (可选) CUDA 11.8+ 用于 GPU 加速
 
@@ -14,6 +15,7 @@
 ```
 
 这个脚本会：
+
 1. 备份原始的 Cargo.toml
 2. 使用 Candle 版本的配置
 3. 构建并运行程序
@@ -75,6 +77,7 @@ mygpt/
 ```
 
 程序会：
+
 1. 读取训练文本 (`src/4in1.txt`)
 2. 创建分词器
 3. 训练模型 (默认 1 个 epoch)
@@ -82,6 +85,7 @@ mygpt/
 5. 使用训练好的模型生成文本
 
 输出示例：
+
 ```
 text chars len: 2847195
 vocab size: 6355
@@ -114,6 +118,7 @@ Generating text...
 ```
 
 输出：
+
 ```
 text chars len: 2847195
 vocab size: 6355
@@ -141,6 +146,7 @@ pub const LEARNING_RATE: f64 = 3.0e-4;  // 学习率
 ```
 
 然后重新构建：
+
 ```bash
 cargo clean
 ./build_candle.sh
@@ -163,6 +169,7 @@ let text = include_str!("../src/my_data.txt");
 ### 方法二：使用其他文件
 
 将你的训练数据放在项目中，例如：
+
 - `src/红楼梦.txt` (单本书)
 - `src/my_corpus.txt` (自定义语料)
 
@@ -195,11 +202,13 @@ cargo build --release --bin mygpt-candle
 ### 2. 运行时错误：CUDA 不可用
 
 程序会自动降级到 CPU：
+
 ```rust
 let device = Device::cuda_if_available(0)?;
 ```
 
 如果想强制使用 CPU：
+
 ```rust
 let device = Device::Cpu;
 ```
@@ -207,6 +216,7 @@ let device = Device::Cpu;
 ### 3. 内存不足
 
 减小批大小或模型大小：
+
 ```rust
 pub const BATCH_SIZE: usize = 32;  // 从 64 减到 32
 pub const N_EMBD: usize = 256;     // 从 384 减到 256
@@ -229,11 +239,13 @@ pub const N_EMBD: usize = 256;     // 从 384 减到 256
 ## 🔄 在 Burn 和 Candle 之间切换
 
 ### 切换到 Candle
+
 ```bash
 ./build_candle.sh
 ```
 
 ### 切换回 Burn
+
 ```bash
 # 如果有备份
 cp Cargo_burn.toml.bak Cargo.toml
@@ -260,6 +272,7 @@ cargo run --release
 - **Top-p**: 核采样（未实现）
 
 示例实现 temperature：
+
 ```rust
 // 在 softmax 之前
 let logits = logits.affine(1.0 / temperature, 0.0)?;
@@ -281,5 +294,5 @@ let logits = logits.affine(1.0 / temperature, 0.0)?;
 
 ## 🎉 完成！
 
-现在你已经成功设置了 Candle 版本的 MyGPT！
-尝试运行 `./build_candle.sh` 开始训练和生成吧！
+现在你已经成功设置了 Candle 版本的 MyGPT！ 尝试运行 `./build_candle.sh`
+开始训练和生成吧！

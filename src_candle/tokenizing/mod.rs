@@ -31,10 +31,7 @@ impl Tokenizer {
     }
 
     pub fn decode(&self, tokens: &[i32]) -> String {
-        tokens
-            .iter()
-            .filter_map(|i| self.itos.get(i))
-            .collect()
+        tokens.iter().filter_map(|i| self.itos.get(i)).collect()
     }
 
     pub fn vocab_size(&self) -> usize {

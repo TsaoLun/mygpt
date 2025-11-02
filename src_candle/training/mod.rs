@@ -5,7 +5,8 @@ use serde::{Deserialize, Serialize};
 use std::fs;
 
 use crate::{
-    dataset::TokenPairDataset, modeling::{BigramModel, BigramModelConfig}
+    dataset::TokenPairDataset,
+    modeling::{BigramModel, BigramModelConfig},
 };
 
 #[derive(Debug, Clone, Serialize, Deserialize)]
@@ -104,7 +105,11 @@ pub fn train(
         println!("Val Loss: {:.4}", val_loss);
 
         // Save checkpoint
-        let checkpoint_path = format!("{}/checkpoint_epoch_{}.safetensors", artifact_dir, epoch + 1);
+        let checkpoint_path = format!(
+            "{}/checkpoint_epoch_{}.safetensors",
+            artifact_dir,
+            epoch + 1
+        );
         varmap.save(&checkpoint_path)?;
         println!("Checkpoint saved to {}", checkpoint_path);
     }

@@ -88,9 +88,7 @@ impl Head {
 
     fn create_causal_mask(size: usize, device: &Device) -> Result<Tensor> {
         let mask_data: Vec<f32> = (0..size)
-            .flat_map(|i| {
-                (0..size).map(move |j| if j > i { f32::NEG_INFINITY } else { 0.0 })
-            })
+            .flat_map(|i| (0..size).map(move |j| if j > i { f32::NEG_INFINITY } else { 0.0 }))
             .collect();
         let tensor = Tensor::from_vec(mask_data, (size, size), device)
             .map_err(|e| anyhow::anyhow!("{}", e))?;
@@ -259,7 +257,9 @@ impl BigramModel {
             x = block.forward(&x, train)?;
         }
 
-        self.lm_head.forward(&x).map_err(|e| anyhow::anyhow!("{}", e))
+        self.lm_head
+            .forward(&x)
+            .map_err(|e| anyhow::anyhow!("{}", e))
     }
 
     pub fn loss(&self, idx: &Tensor, targets: &Tensor, train: bool) -> Result<Tensor> {
@@ -269,8 +269,7 @@ impl BigramModel {
         let logits = logits.reshape((b * t, c))?;
         let targets = targets.reshape(b * t)?;
 
-        candle_nn::loss::cross_entropy(&logits, &targets)
-            .map_err(|e| anyhow::anyhow!("{}", e))
+        candle_nn::loss::cross_entropy(&logits, &targets).map_err(|e| anyhow::anyhow!("{}", e))
     }
 
     pub fn save(&self, path: &str, varmap: &VarMap) -> Result<()> {
@@ -298,17 +297,21 @@ fn dropout(x: &Tensor, prob: f64) -> Result<Tensor> {
     let shape = x.shape();
 
     // Create random mask
-    let random_vals = Tensor::rand(0.0f32, 1.0f32, shape, device)
-        .map_err(|e| anyhow::anyhow!("{}", e))?;
-    let keep_mask = random_vals.gt(prob)
-        .map_err(|e| anyhow::anyhow!("{}", e))?;
+    let random_vals =
+        Tensor::rand(0.0f32, 1.0f32, shape, device).map_err(|e| anyhow::anyhow!("{}", e))?;
+    let keep_mask = random_vals.gt(prob).map_err(|e| anyhow::anyhow!("{}", e))?;
 
     // Scale by 1/(1-prob) to maintain expected value
     let scale = 1.0 / (1.0 - prob);
-    let result = x.broadcast_mul(&keep_mask.to_dtype(x.dtype())
-        .map_err(|e| anyhow::anyhow!("{}", e))?)
+    let result = x
+        .broadcast_mul(
+            &keep_mask
+                .to_dtype(x.dtype())
+                .map_err(|e| anyhow::anyhow!("{}", e))?,
+        )
         .map_err(|e| anyhow::anyhow!("{}", e))?;
-    result.affine(scale, 0.0)
+    result
+        .affine(scale, 0.0)
         .map_err(|e| anyhow::anyhow!("{}", e))
 }
 

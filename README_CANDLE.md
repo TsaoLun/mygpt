@@ -83,12 +83,12 @@ pub const LEARNING_RATE: f64 = 3.0e-4;  // 学习率
 
 ## 训练数据
 
-默认使用 `src/4in1.txt` 作为训练数据（四大名著合集）。
-可以修改 `main.rs` 中的 `include_str!` 路径来使用其他文本文件。
+默认使用 `src/4in1.txt` 作为训练数据（四大名著合集）。 可以修改 `main.rs` 中的
+`include_str!` 路径来使用其他文本文件。
 
 ## 与 Burn 版本的区别
 
-1. **后端**: 
+1. **后端**:
    - Burn: 使用 Wgpu 后端
    - Candle: 支持 CUDA/CPU/Metal
 
@@ -117,6 +117,7 @@ pub const LEARNING_RATE: f64 = 3.0e-4;  // 学习率
 ## 依赖
 
 主要依赖：
+
 - `candle-core = "0.9.1"` - 核心张量操作
 - `candle-nn = "0.9.1"` - 神经网络层
 - `tokio` - 异步运行时
